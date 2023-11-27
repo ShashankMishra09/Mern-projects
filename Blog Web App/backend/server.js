@@ -8,7 +8,11 @@ import jwt from "jsonwebtoken";
 import cors from "cors"
 
 const app = express();
-app.use(cors())
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-type"],
+}))
 const PORT = 8000;
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
@@ -34,10 +38,11 @@ const generateUserName = async (email) => {
   let username = email.split("@")[0];
   let userNameExist = await User.exists({
     "personal_info.username": username,
-  }).then((result) => result);
+  });
   userNameExist ? (username += superheroes.random()) : "";
   return username;
 };
+
 
 app.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;

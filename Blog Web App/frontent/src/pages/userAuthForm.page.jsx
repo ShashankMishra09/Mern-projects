@@ -1,22 +1,26 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import { Link } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast"; // to make ui alert Toaster is html component and toast knows where to show alert
+import { storeInSession } from "../common/session";
 
 const UserAuthForm = ({ type }) => {
-  const authForm = useRef();
 
   const userAuthThroughServer = (serverRoute, formData) => {
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
-    .then(({data})=>{
-      console.log(data);
-    })
-    .catch(({response})=>{
-      toast.error(response.data.error)
-    })
+    useEffect(()=>{
+      axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
+      .then(({ data }) => {
+        storeInSession("user", JSON.stringify(data))
+        console.log(sessionStorage);
+      })
+      .catch(({ response }) => {
+        toast.error(response.data.error);
+      });
+    },[])
   };
 
   const handleSubmit = (e) => {
@@ -26,12 +30,11 @@ const UserAuthForm = ({ type }) => {
     let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
-    let form = new FormData(authForm.current);
+    let form = new FormData(formElement);
     let formData = {};
     for (let [key, value] of form.entries()) {
       formData[key] = value;
     }
-
     let { fullname, email, password } = formData;
 
     if (fullname) {
@@ -51,7 +54,7 @@ const UserAuthForm = ({ type }) => {
         "Password must contain 6 to 20 characters and have atleast a numeric, a lower case,an uppercase and a special character e.g:@,#,$ etc"
       );
     }
-    
+
     userAuthThroughServer(serverRoute, formData);
   };
 
@@ -60,7 +63,7 @@ const UserAuthForm = ({ type }) => {
       <section className="h-cover flex items-center justify-center">
         <Toaster />
         <form
-          ref={authForm}
+        id="formElement"
           className="w-[60%] max-w-[400] flex items-center justify-center flex-col"
         >
           <h1 className="text-4xl font-gelasio capitalize text-center mb-24">
