@@ -1,26 +1,30 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast"; // to make ui alert Toaster is html component and toast knows where to show alert
 import { storeInSession } from "../common/session";
+import { UserContext } from "../App";
 
 const UserAuthForm = ({ type }) => {
+  let {
+    userAuth: { access_token },
+    setUserAuth,
+  } = useContext(UserContext);
+  console.log(access_token);
 
   const userAuthThroughServer = (serverRoute, formData) => {
-    useEffect(()=>{
-      axios
+    axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
       .then(({ data }) => {
-        storeInSession("user", JSON.stringify(data))
-        console.log(sessionStorage);
+        storeInSession("user", JSON.stringify(data));
+        setUserAuth(data);
       })
       .catch(({ response }) => {
         toast.error(response.data.error);
       });
-    },[])
   };
 
   const handleSubmit = (e) => {
@@ -58,12 +62,14 @@ const UserAuthForm = ({ type }) => {
     userAuthThroughServer(serverRoute, formData);
   };
 
-  return (
+  return access_token ? (
+    <Navigate to="/" />
+  ) : (
     <AnimationWrapper keyVal={type}>
       <section className="h-cover flex items-center justify-center">
         <Toaster />
         <form
-        id="formElement"
+          id="formElement"
           className="w-[60%] max-w-[400] flex items-center justify-center flex-col"
         >
           <h1 className="text-4xl font-gelasio capitalize text-center mb-24">

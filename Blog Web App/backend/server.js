@@ -38,15 +38,15 @@ const generateUserName = async (email) => {
   let username = email.split("@")[0];
   let userNameExist = await User.exists({
     "personal_info.username": username,
-  });
+  }).then((result) => result);
   userNameExist ? (username += superheroes.random()) : "";
   return username;
 };
 
-
 app.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
-  if (fullname.length < 3) {
+  let length = fullname.length
+  if (length < 3) {
     return res
       .status(403)
       .json({ error: "Fullname should be longer than 3 letters" });
