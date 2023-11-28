@@ -49,7 +49,7 @@ const generateUserName = async (email) => {
 
 app.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
-  let length = fullname.length;
+  let length = fullname?.length;
   if (length < 3) {
     return res
       .status(403)
