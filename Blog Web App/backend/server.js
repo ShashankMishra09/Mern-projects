@@ -134,7 +134,7 @@ app.post("/google-auth", async (req, res) => {
         })
         .catch((err) => res.status(500).json({ error: err.message }));
       if (user ) {
-        if( !user.google_auth){
+        if(!user.google_auth){
           return res
             .status(403)
             .json({
