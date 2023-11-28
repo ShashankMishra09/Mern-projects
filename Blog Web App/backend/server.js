@@ -7,11 +7,13 @@ import superheroes from "superheroes";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: "json" };
+import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: 'json' };
 import { getAuth } from "firebase-admin/auth";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors()
+);
 const PORT = 8000;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -123,39 +125,28 @@ app.post("/google-auth", async (req, res) => {
     .then(async (decodedUser) => {
       let { email, name, picture } = decodedUser;
       picture = picture.replace("s96-c", "s384-c");
+
       let user = await User.findOne({ "personal_info.email": email })
         .select(
-          "personal_info.fullname personal_info.username personal_info.profile_img google_auth"
+          "personal_info.fullname personal_info.username personal_info.profile_img personal_info.google_auth"
         )
         .then((u) => {
           return u || null;
         })
         .catch((err) => res.status(500).json({ error: err.message }));
-<<<<<<< HEAD
 
       if (user) {
         if (!user.google_auth) {
-          return res.status(403).json({
-            error:
-              "This account is not a google signed. Please login with email and password",
-          });
-        }
-=======
-      if (user ) {
-        if(!user.google_auth){
           return res
             .status(403)
             .json({
               error:
                 "This account is not a google signed. Please login with email and password",
             });
-          } else{
-            return res.status(200).json(formatDatatoSend(user))
-          }
->>>>>>> 44a9e122f3eae8b199fa6d239aa3e928dcae97e8
+        }
       } else {
         let username = await generateUserName(email);
-        let saveUser = new User({
+        user = new User({
           personal_info: {
             fullname: name,
             email,
@@ -164,32 +155,18 @@ app.post("/google-auth", async (req, res) => {
           },
           google_auth: true,
         });
-<<<<<<< HEAD
-        await user
-          .save()
-          .then((u) => {
-            user = u;
-          })
-          .catch((err) => {
-            return res.status(500).json({ error: err.message });
-          });
-=======
-        saveUser.save()
-        .then((u)=>{
-          return res.status(200).json(formatDatatoSend(u));
+        await user.save().then((u)=>{
+          user = u
         })
         .catch(err=>{
           return res.status(500).json({"error":err.message})
         })
->>>>>>> 44a9e122f3eae8b199fa6d239aa3e928dcae97e8
       }
-      
+      return res.status(200).json(formatDatatoSend(user));
     })
-    .catch((err) => {
-      res
-        .status(500)
-        .json({ error: "Failed to authenticate.Try another google account" });
-    });
+    .catch(err=>{
+      res.status(500).json({"error":"Failed to authenticate.Try another google account"})
+    })
 });
 
 app.listen(PORT, () => {
