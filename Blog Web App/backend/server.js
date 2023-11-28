@@ -125,28 +125,28 @@ app.post("/google-auth", async (req, res) => {
     .then(async (decodedUser) => {
       let { email, name, picture } = decodedUser;
       picture = picture.replace("s96-c", "s384-c");
-
       let user = await User.findOne({ "personal_info.email": email })
         .select(
-          "personal_info.fullname personal_info.username personal_info.profile_img personal_info.google_auth"
+          "personal_info.fullname personal_info.username personal_info.profile_img google_auth"
         )
         .then((u) => {
           return u || null;
         })
         .catch((err) => res.status(500).json({ error: err.message }));
-
-      if (user) {
-        if (!user.google_auth) {
+      if (user ) {
+        if( !user.google_auth){
           return res
             .status(403)
             .json({
               error:
                 "This account is not a google signed. Please login with email and password",
             });
-        }
+          } else{
+            return res.status(200).json(formatDatatoSend(user))
+          }
       } else {
         let username = await generateUserName(email);
-        user = new User({
+        let saveUser = new User({
           personal_info: {
             fullname: name,
             email,
@@ -155,14 +155,15 @@ app.post("/google-auth", async (req, res) => {
           },
           google_auth: true,
         });
-        await user.save().then((u)=>{
-          user = u
+        saveUser.save()
+        .then((u)=>{
+          return res.status(200).json(formatDatatoSend(u));
         })
         .catch(err=>{
           return res.status(500).json({"error":err.message})
         })
       }
-      return res.status(200).json(formatDatatoSend(user));
+      
     })
     .catch(err=>{
       res.status(500).json({"error":"Failed to authenticate.Try another google account"})
