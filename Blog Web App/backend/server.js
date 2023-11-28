@@ -5,15 +5,19 @@ import bcrypt from "bcryptjs";
 import User from "./Schema/User.js";
 import superheroes from "superheroes";
 import jwt from "jsonwebtoken";
-import cors from "cors"
+import cors from "cors";
+import admin from "firebase-admin";
+import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: 'json' };
+import { getAuth } from "firebase-admin/auth";
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-type"],
-}))
+app.use(
+  cors()
+);
 const PORT = 8000;
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountKey),
+});
 let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
@@ -45,7 +49,7 @@ const generateUserName = async (email) => {
 
 app.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
-  let length = fullname.length
+  let length = fullname.length;
   if (length < 3) {
     return res
       .status(403)
@@ -106,12 +110,63 @@ app.post("/signin", (req, res) => {
         }
       });
       console.log(user);
-    //   return res.json({ status: "got user document" });
+      //   return res.json({ status: "got user document" });
     })
     .catch((err) => {
       console.log(err);
       return res.status(500).json({ error: err.message });
     });
+});
+
+app.post("/google-auth", async (req, res) => {
+  let { access_token } = req.body;
+  getAuth()
+    .verifyIdToken(access_token)
+    .then(async (decodedUser) => {
+      let { email, name, picture } = decodedUser;
+      picture = picture.replace("s96-c", "s384-c");
+
+      let user = await User.findOne({ "personal_info.email": email })
+        .select(
+          "personal_info.fullname personal_info.username personal_info.profile_img personal_info.google_auth"
+        )
+        .then((u) => {
+          return u || null;
+        })
+        .catch((err) => res.status(500).json({ error: err.message }));
+
+      if (user) {
+        if (!user.google_auth) {
+          return res
+            .status(403)
+            .json({
+              error:
+                "This account is not a google signed. Please login with email and password",
+            });
+        }
+      } else {
+        let username = await generateUserName(email);
+        user = new User({
+          personal_info: {
+            fullname: name,
+            email,
+            profile_img: picture,
+            username,
+          },
+          google_auth: true,
+        });
+        await user.save().then((u)=>{
+          user = u
+        })
+        .catch(err=>{
+          return res.status(500).json({"error":err.message})
+        })
+      }
+      return res.status(200).json(formatDatatoSend(user));
+    })
+    .catch(err=>{
+      res.status(500).json({"error":"Failed to authenticate.Try another google account"})
+    })
 });
 
 app.listen(PORT, () => {

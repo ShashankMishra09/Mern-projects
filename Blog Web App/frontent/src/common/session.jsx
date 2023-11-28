@@ -6,7 +6,7 @@ export const lookInSession = (key)=>{
     return sessionStorage.getItem(key)                                                                  
 }
 
-export const removedfromSession = (key) => {
+export const removedFromSession = (key) => {
     return sessionStorage.removeItem(key)
 }
 
