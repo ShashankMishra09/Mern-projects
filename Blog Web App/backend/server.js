@@ -123,15 +123,15 @@ app.post("/google-auth", async (req, res) => {
     .then(async (decodedUser) => {
       let { email, name, picture } = decodedUser;
       picture = picture.replace("s96-c", "s384-c");
-
       let user = await User.findOne({ "personal_info.email": email })
         .select(
-          "personal_info.fullname personal_info.username personal_info.profile_img personal_info.google_auth"
+          "personal_info.fullname personal_info.username personal_info.profile_img google_auth"
         )
         .then((u) => {
           return u || null;
         })
         .catch((err) => res.status(500).json({ error: err.message }));
+<<<<<<< HEAD
 
       if (user) {
         if (!user.google_auth) {
@@ -140,9 +140,22 @@ app.post("/google-auth", async (req, res) => {
               "This account is not a google signed. Please login with email and password",
           });
         }
+=======
+      if (user ) {
+        if(!user.google_auth){
+          return res
+            .status(403)
+            .json({
+              error:
+                "This account is not a google signed. Please login with email and password",
+            });
+          } else{
+            return res.status(200).json(formatDatatoSend(user))
+          }
+>>>>>>> 44a9e122f3eae8b199fa6d239aa3e928dcae97e8
       } else {
         let username = await generateUserName(email);
-        user = new User({
+        let saveUser = new User({
           personal_info: {
             fullname: name,
             email,
@@ -151,6 +164,7 @@ app.post("/google-auth", async (req, res) => {
           },
           google_auth: true,
         });
+<<<<<<< HEAD
         await user
           .save()
           .then((u) => {
@@ -159,8 +173,17 @@ app.post("/google-auth", async (req, res) => {
           .catch((err) => {
             return res.status(500).json({ error: err.message });
           });
+=======
+        saveUser.save()
+        .then((u)=>{
+          return res.status(200).json(formatDatatoSend(u));
+        })
+        .catch(err=>{
+          return res.status(500).json({"error":err.message})
+        })
+>>>>>>> 44a9e122f3eae8b199fa6d239aa3e928dcae97e8
       }
-      return res.status(200).json(formatDatatoSend(user));
+      
     })
     .catch((err) => {
       res
