@@ -65,19 +65,20 @@ const UserAuthForm = ({ type }) => {
 
   const handleGoogleAuth = (e) => {
     e.preventDefault();
-    authGoogle().then(user=>{
-      let serverRoute = "/google-auth";
-      let formData = {
-        access_token:user.accessToken
-      }
+    authGoogle()
+      .then((user) => {
+        let serverRoute = "/google-auth";
+        let formData = {
+          access_token: user.accessToken,
+        };
 
-      userAuthThroughServer(serverRoute,formData)
-    })
-    .catch(err=>{
-      toast.error('trouble login to google')
-      return console.log(err);
-    })
-  }
+        userAuthThroughServer(serverRoute, formData);
+      })
+      .catch((err) => {
+        toast.error("trouble login to google");
+        return console.log(err);
+      });
+  };
 
   return access_token ? (
     <Navigate to="/" />
@@ -128,7 +129,10 @@ const UserAuthForm = ({ type }) => {
             <h1 className="text-black">or</h1>
             <hr className="w-1/2 border-black" />
           </div>
-          <button className="btn-dark flex items-center justify-center gap-4 md:w-[40%] sm:w-[100%] center" onClick={handleGoogleAuth}>
+          <button
+            className="btn-dark flex items-center justify-center gap-4 md:w-[40%] sm:w-[100%] center"
+            onClick={handleGoogleAuth}
+          >
             <img src={googleIcon} className="w-5" />
             continue with google
           </button>

@@ -7,13 +7,11 @@ import superheroes from "superheroes";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: 'json' };
+import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 
 const app = express();
-app.use(
-  cors()
-);
+app.use(cors());
 const PORT = 8000;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -137,12 +135,10 @@ app.post("/google-auth", async (req, res) => {
 
       if (user) {
         if (!user.google_auth) {
-          return res
-            .status(403)
-            .json({
-              error:
-                "This account is not a google signed. Please login with email and password",
-            });
+          return res.status(403).json({
+            error:
+              "This account is not a google signed. Please login with email and password",
+          });
         }
       } else {
         let username = await generateUserName(email);
@@ -155,18 +151,22 @@ app.post("/google-auth", async (req, res) => {
           },
           google_auth: true,
         });
-        await user.save().then((u)=>{
-          user = u
-        })
-        .catch(err=>{
-          return res.status(500).json({"error":err.message})
-        })
+        await user
+          .save()
+          .then((u) => {
+            user = u;
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
       }
       return res.status(200).json(formatDatatoSend(user));
     })
-    .catch(err=>{
-      res.status(500).json({"error":"Failed to authenticate.Try another google account"})
-    })
+    .catch((err) => {
+      res
+        .status(500)
+        .json({ error: "Failed to authenticate.Try another google account" });
+    });
 });
 
 app.listen(PORT, () => {
