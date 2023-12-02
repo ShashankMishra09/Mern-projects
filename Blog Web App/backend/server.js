@@ -7,13 +7,13 @@ import superheroes from "superheroes";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: 'json' };
+import serviceAccountKey from "./blog-web-app-425aa-firebase-adminsdk-mkf1s-c2143ddd08.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
+import aws from "aws-sdk";
+import { nanoid } from "nanoid";
 
 const app = express();
-app.use(
-  cors()
-);
+app.use(cors());
 const PORT = 8000;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -24,6 +24,23 @@ let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 app.use(express.json());
 
 mongoose.connect(process.env.DB_LOCATION, { autoIndex: true });
+
+const s3 = new aws.S3({
+  region: "ap-south-1",
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+const generateUploadURL = async () => {
+  const date = new Date();
+  const imgName = `${nanoid()}-${date.getTime()}.jpeg`;
+  return await s3.getSignedUrlPromise("putObject", {
+    Bucket: "blog-web-app",
+    Key: imgName,
+    Expires: 1000,
+    ContentType: "image/jpeg",
+  });
+};
 
 const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
@@ -46,6 +63,15 @@ const generateUserName = async (email) => {
   userNameExist ? (username += superheroes.random()) : "";
   return username;
 };
+
+app.get("/get-upload-url", (req, res) => {
+  generateUploadURL()
+    .then((url) => res.status(200).json({ uploadURL: url }))
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 app.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
@@ -137,12 +163,10 @@ app.post("/google-auth", async (req, res) => {
 
       if (user) {
         if (!user.google_auth) {
-          return res
-            .status(403)
-            .json({
-              error:
-                "This account is not a google signed. Please login with email and password",
-            });
+          return res.status(403).json({
+            error:
+              "This account is not a google signed. Please login with email and password",
+          });
         }
       } else {
         let username = await generateUserName(email);
@@ -155,18 +179,22 @@ app.post("/google-auth", async (req, res) => {
           },
           google_auth: true,
         });
-        await user.save().then((u)=>{
-          user = u
-        })
-        .catch(err=>{
-          return res.status(500).json({"error":err.message})
-        })
+        await user
+          .save()
+          .then((u) => {
+            user = u;
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
       }
       return res.status(200).json(formatDatatoSend(user));
     })
-    .catch(err=>{
-      res.status(500).json({"error":"Failed to authenticate.Try another google account"})
-    })
+    .catch((err) => {
+      res
+        .status(500)
+        .json({ error: "Failed to authenticate.Try another google account" });
+    });
 });
 
 app.listen(PORT, () => {
