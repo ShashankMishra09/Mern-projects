@@ -6,8 +6,9 @@ import Tag from "./tags.component";
 
 const PublishForm = () => {
   let charLimit = 200;
-  let tagLimit=10
+  let tagLimit = 10;
   let {
+    blog,
     blog: { banner, title, tags, des },
     setEditorState,
     setBlog,
@@ -17,11 +18,11 @@ const PublishForm = () => {
   };
   const handleTitleChange = (e) => {
     let input = e.target;
-    setBlog({ ...blog, des: input.value });
+    setBlog({ ...blog, title: input.value });
   };
   const handleDesChange = (e) => {
     let input = e.target;
-    setBlog({ ...blog, title: input.value });
+    setBlog({ ...blog, des: input.value });
   };
   const handleTitleKeyDown = (e) => {
     if (e.keyCode == 13) {
@@ -31,17 +32,16 @@ const PublishForm = () => {
   const handleKeyDown = (e) => {
     if (e.keyCode == 13 || e.keyCode == 188) {
       e.preventDefault();
-      let tag = e.target.value
-      if(tags.length<tagLimit){
-        if(!tags.includes(tag)&&tag.length){
-          setBlog({...blog,tags:[...tags,tag]})
+      let tag = e.target.value;
+      if (tags.length < tagLimit) {
+        if (!tags.includes(tag) && tag.length) {
+          setBlog({ ...blog, tags: [...tags, tag] });
         }
-      }else{
-        toast.error(`Only ${tagLimit} tags can be added`)
+      } else {
+        toast.error(`Only ${tagLimit} tags can be added`);
       }
-      e.target.value=""
+      e.target.value = "";
     }
-    
   };
 
   return (
@@ -87,7 +87,7 @@ const PublishForm = () => {
             {charLimit - des.length} character left
           </p>
           <p className="text-dark-grey mb-2 mt-9">
-            Topics-(Help in search and rank the blog)
+            Tags-(Help in search and rank the blog)
           </p>
           <div className="relative input-box pl-2 py-2 pb-4">
             <input
@@ -97,9 +97,13 @@ const PublishForm = () => {
               onKeyDown={handleKeyDown}
             />
             {tags.map((tag, i) => {
-             return <Tag tag={tag} key={i} />;
+              return <Tag tag={tag} tagIndex={i} key={i} />;
             })}
           </div>
+          <p className="mt-1 mb-4 text-right text-dark-grey">
+            {tagLimit - tags.length} tags left
+          </p>
+          <button className="btn-dark px-8">Publish</button>
         </div>
       </section>
     </AnimationWrapper>

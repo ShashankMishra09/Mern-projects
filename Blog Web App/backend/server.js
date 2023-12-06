@@ -197,6 +197,10 @@ app.post("/google-auth", async (req, res) => {
     });
 });
 
+app.post('/create-blog',(res,req)=>{
+  
+})
+
 app.listen(PORT, () => {
   console.log(`We are running on ${PORT}`);
 });
