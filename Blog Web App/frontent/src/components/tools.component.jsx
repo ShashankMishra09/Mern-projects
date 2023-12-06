@@ -5,10 +5,10 @@ import Header from "@editorjs/header";
 import Quote from "@editorjs/quote";
 import Marker from "@editorjs/marker";
 import InlineCode from "@editorjs/inline-code";
-import { uploadImage } from "../common/aws"
+import { UploadImage } from "../common/aws"
 
 const uploadImageByFile = (e) => {
- return uploadImage(e).then(url=>{
+ return UploadImage(e).then(url=>{
     if(url){
       return {
         success: 1,
