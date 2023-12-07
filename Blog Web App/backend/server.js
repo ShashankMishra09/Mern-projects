@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import User from "./Schema/User.js";
+import Blog from "./Schema/Blog.js";
 import superheroes from "superheroes";
 import jwt from "jsonwebtoken";
 import cors from "cors";
@@ -39,6 +40,22 @@ const generateUploadURL = async () => {
     Key: imgName,
     Expires: 1000,
     ContentType: "image/jpeg",
+  });
+};
+
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) {
+    return res.status(401).json({ error: "No access token" });
+  }
+  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Access token is invalid" });
+    }
+
+    req.user = user.id;
+    next();
   });
 };
 
@@ -197,9 +214,74 @@ app.post("/google-auth", async (req, res) => {
     });
 });
 
-app.post('/create-blog',(res,req)=>{
-  
-})
+app.post("/create-blog", verifyJWT, (res, req) => {
+  let authorId = req.user;
+  let { title, des, banner, tags, content, draft } = req.body;
+  if (!title.length) {
+    return res
+      .status(403)
+      .json({ error: "You must provie a title to publish the blog" });
+  }
+  if (!des.length || des.length > 200) {
+    return res
+      .status(403)
+      .json({ error: "You must provie a description to publish the blog" });
+  }
+  if (!banner.length) {
+    return res
+      .status(403)
+      .json({ error: "You must provie a blog banner to ppublish the blog" });
+  }
+  if (!content.blocks.length) {
+    return res
+      .status(403)
+      .json({ error: "You must provie a content to ppublish the blog" });
+  }
+  if (!tags.length || tags.length > 10) {
+    return res.status(403).json({
+      error: "You must provie max 10 atleast 1 tag to publish the blog",
+    });
+  }
+  tags = tags.map((tag) => tag.toLowerCase());
+  let blog_id =
+    title
+      .replace(/[^a-zA-Z0-9]/g, " ")
+      .replace(/\s+/g, "-")
+      .trim() + nanoid();
+  let blog = new Blog({
+    title,
+    des,
+    banner,
+    content,
+    tags,
+    author: authorId,
+    blog_id,
+    draft: Boolean(draft),
+  });
+  blog.save().then((blog) => {
+    let incrementVal = draft ? 0 : 1;
+    User.findOneAndUpdate(
+      { _id: authorId },
+      {
+        $inc: { "account_info.total_posts": incrementVal },
+        $push: { blogs: blog._id },
+      }
+    )
+      .then((user) => {
+        return res.status(200).json({ id: blog.blog_id });
+      })
+      .catch((err) => {
+        return res
+          .status(500)
+          .json({ error: "Failed to update total post number" });
+      });
+  })
+  .catch((err) => {
+    return res
+      .status(500)
+      .json({ error: err.message });
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`We are running on ${PORT}`);
