@@ -3,16 +3,26 @@ import AnimationWrapper from "../common/page-animation";
 import { Toaster, toast } from "react-hot-toast";
 import { EditorContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
+import axios from "axios";
+import { UserContext } from "../App";
+import { useNavigate } from "react-router-dom";
 
 const PublishForm = () => {
   let charLimit = 200;
   let tagLimit = 10;
   let {
     blog,
-    blog: { banner, title, tags, des },
+    blog: { banner, title, tags, des, content },
     setEditorState,
     setBlog,
   } = useContext(EditorContext);
+
+  let navigate = useNavigate();
+
+  let {
+    userAuth: { access_token },
+  } = useContext(UserContext);
+
   const handleCloseEvent = () => {
     setEditorState("editor");
   };
@@ -42,6 +52,55 @@ const PublishForm = () => {
       }
       e.target.value = "";
     }
+  };
+
+  const pubishBlog = (e) => {
+    if (e.target.className.includes("disable")) {
+      return;
+    }
+    if (!title.length) {
+      return toast.error("Write a blog title before publishing it");
+    }
+    if (!des.length || des.length > charLimit) {
+      return toast.error(
+        "You have no description or your description is too long"
+      );
+    }
+    if (!tags.length) {
+      return toast.error("Write atleast one tag before publishing it");
+    }
+    let loadingToast = toast.loading("Publishing...");
+
+    e.target.classList.add("disable");
+    let blogObj = {
+      banner,
+      title,
+      tags,
+      des,
+      content,
+      draft: false,
+    };
+
+    axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", blogObj, {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      })
+      .then(() => {
+        e.target.classList.remove("disable");
+        toast.dismiss(loadingToast);
+        toast.success("Success 👍 ");
+        setTimeout(() => {
+          navigate("/");
+        }, 500);
+      })
+      .catch(({ response }) => {
+        e.target.classList.remove("disable");
+        toast.dismiss(loadingToast);
+
+        return toast.error(response.data.error);
+      });
   };
 
   return (
@@ -103,7 +162,9 @@ const PublishForm = () => {
           <p className="mt-1 mb-4 text-right text-dark-grey">
             {tagLimit - tags.length} tags left
           </p>
-          <button className="btn-dark px-8">Publish</button>
+          <button className="btn-dark px-8" onClick={pubishBlog}>
+            Publish
+          </button>
         </div>
       </section>
     </AnimationWrapper>

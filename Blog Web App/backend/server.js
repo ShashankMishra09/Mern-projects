@@ -214,34 +214,39 @@ app.post("/google-auth", async (req, res) => {
     });
 });
 
-app.post("/create-blog", verifyJWT, (res, req) => {
+app.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
   let { title, des, banner, tags, content, draft } = req.body;
+
   if (!title.length) {
     return res
       .status(403)
       .json({ error: "You must provie a title to publish the blog" });
   }
-  if (!des.length || des.length > 200) {
-    return res
-      .status(403)
-      .json({ error: "You must provie a description to publish the blog" });
+
+  if (!draft) {
+    if (!des.length || des.length > 200) {
+      return res
+        .status(403)
+        .json({ error: "You must provie a description to publish the blog" });
+    }
+    if (!banner.length) {
+      return res
+        .status(403)
+        .json({ error: "You must provie a blog banner to ppublish the blog" });
+    }
+    if (!content.blocks.length) {
+      return res
+        .status(403)
+        .json({ error: "You must provie a content to ppublish the blog" });
+    }
+    if (!tags.length || tags.length > 10) {
+      return res.status(403).json({
+        error: "You must provie max 10 atleast 1 tag to publish the blog",
+      });
+    }
   }
-  if (!banner.length) {
-    return res
-      .status(403)
-      .json({ error: "You must provie a blog banner to ppublish the blog" });
-  }
-  if (!content.blocks.length) {
-    return res
-      .status(403)
-      .json({ error: "You must provie a content to ppublish the blog" });
-  }
-  if (!tags.length || tags.length > 10) {
-    return res.status(403).json({
-      error: "You must provie max 10 atleast 1 tag to publish the blog",
-    });
-  }
+
   tags = tags.map((tag) => tag.toLowerCase());
   let blog_id =
     title
@@ -258,29 +263,29 @@ app.post("/create-blog", verifyJWT, (res, req) => {
     blog_id,
     draft: Boolean(draft),
   });
-  blog.save().then((blog) => {
-    let incrementVal = draft ? 0 : 1;
-    User.findOneAndUpdate(
-      { _id: authorId },
-      {
-        $inc: { "account_info.total_posts": incrementVal },
-        $push: { blogs: blog._id },
-      }
-    )
-      .then((user) => {
-        return res.status(200).json({ id: blog.blog_id });
-      })
-      .catch((err) => {
-        return res
-          .status(500)
-          .json({ error: "Failed to update total post number" });
-      });
-  })
-  .catch((err) => {
-    return res
-      .status(500)
-      .json({ error: err.message });
-  });
+  blog
+    .save()
+    .then((blog) => {
+      let incrementVal = draft ? 0 : 1;
+      User.findOneAndUpdate(
+        { _id: authorId },
+        {
+          $inc: { "account_info.total_posts": incrementVal },
+          $push: { blogs: blog._id },
+        }
+      )
+        .then((user) => {
+          return res.status(200).json({ id: blog.blog_id });
+        })
+        .catch((err) => {
+          return res
+            .status(500)
+            .json({ error: "Failed to update total post number" });
+        });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
 });
 
 app.listen(PORT, () => {
