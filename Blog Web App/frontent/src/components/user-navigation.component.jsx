@@ -12,6 +12,7 @@ const UserNavigationPanel = () => {
   const signOutUser = ()=>{
     removedFromSession("user")
     setUserAuth({access_token:null})
+    console.log(username);
   }
   return (
     <AnimationWrapper
