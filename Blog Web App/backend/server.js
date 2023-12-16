@@ -214,6 +214,45 @@ app.post("/google-auth", async (req, res) => {
     });
 });
 
+app.get("/latest-blogs", (req, res) => {
+  let maxLimit = 5;
+  Blog.find({ draft: false })
+    .populate(
+      "author",
+      "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+    )
+    .sort({ publishedAt: -1 })
+    .select("blog_id title des banner activity tags publishedAt -_id")
+    .limit(maxLimit)
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.get("/trending-blogs", (req, res) => {
+  Blog.find({ draft: false })
+    .populate(
+      "author",
+      "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+    )
+    .sort({
+      "activity.total_read": -1,
+      "activity.total_likes": -1,
+      publishedAt: -1,
+    })
+    .select("blog_id title publishedAt -_id")
+    .limit(5)
+    .then((blogs) => {
+      return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 app.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
   let { title, des, banner, tags, content, draft } = req.body;
@@ -235,7 +274,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
         .status(403)
         .json({ error: "You must provie a blog banner to ppublish the blog" });
     }
-    if (!content.blocks.length) {
+    if (!content.blogs.length) {
       return res
         .status(403)
         .json({ error: "You must provie a content to ppublish the blog" });

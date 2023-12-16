@@ -75,14 +75,14 @@ const BlogEditor = () => {
     let img = e.target;
     img.src = defaultBanner;
   };
-  const handlePublishEvent = (e) => {
+  const handlePublishEvent = () => {
     if (!banner.length) {
       return toast.error("Upload a blog banner to publish it");
     }
     if (!title.length) {
       return toast.error("Write blog title to publish it");
     }
-    if (!textEditor.isReady) {
+    if (textEditor.isReady) {
       textEditor
         .save()
         .then((data) => {

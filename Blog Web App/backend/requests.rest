@@ -1,9 +1,1 @@
-# POST http://localhost:8000/create-blog
-# Content-Type: application/json
-
-# {
-#     "blog-name": "This is a test blog"
-# }
-
-
-Authorization: Bear
+GET http://localhost:8000/latest-blogs

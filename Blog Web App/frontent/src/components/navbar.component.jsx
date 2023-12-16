@@ -79,7 +79,7 @@ const Navbar = () => {
               <Link className="btn-dark py-2" to="/signin">
                 Sign In
               </Link>
-              <Link className="btn-light py-2 sm:hidden md:block" to="/signup">
+              <Link className="btn-light py-2 hidden md:block" to="/signup">
                 Sign up
               </Link>
             </>
