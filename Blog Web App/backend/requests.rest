@@ -1,1 +1,6 @@
-GET http://localhost:8000/latest-blogs
+POST  http://localhost:8000/search-blogs
+Content-Type: application/json
+
+{
+    "tag":"tag"
+}
