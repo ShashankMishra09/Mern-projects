@@ -1,6 +1,6 @@
-POST  http://localhost:8000/search-blogs
+POST  http://localhost:8000/get-profile
 Content-Type: application/json
 
 {
-    "tag":"tag"
+    "username":"shashank@gmail.com"
 }
