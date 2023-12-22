@@ -1,6 +1,6 @@
-POST  http://localhost:8000/get-profile
+POST  http://localhost:8000/get-blog
 Content-Type: application/json
 
 {
-    "username":"shashank@gmail.com"
+    "username":"god"
 }

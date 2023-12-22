@@ -267,20 +267,19 @@ app.get("/trending-blogs", (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  let { tag, query, page } = req.body;
+  let { tag, query, page, author } = req.body;
   let findQuery;
-  // console.log("Received parameters:", { tag, query, page });
   if (tag) {
     findQuery = { tags: tag, draft: false };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
+  } else if (author) {
+    findQuery = { author, draft: false };
   } else {
-    // Handle the case where neither tag nor query is provided
     return res
       .status(400)
       .json({ error: "Tag or query parameter is required." });
   }
-  // console.log("Constructed findQuery:", findQuery);
 
   let maxLimit = 5;
   Blog.find(findQuery)
@@ -303,12 +302,14 @@ app.post("/search-blogs", (req, res) => {
 });
 
 app.post("/search-blogs-count", (req, res) => {
-  let { tag,query } = req.body;
+  let { tag, query, author } = req.body;
   let findQuery;
   if (tag) {
     findQuery = { tags: tag, draft: false };
   } else if (query) {
     findQuery = { draft: false, title: new RegExp(query, "i") };
+  } else if (author) {
+    findQuery = { author, draft: false };
   } else {
     return res
       .status(400)
@@ -324,32 +325,34 @@ app.post("/search-blogs-count", (req, res) => {
     });
 });
 
-app.post("/search-user",(req,res)=>{
-  let {query} = req.body
-  User.find({"personal_info.username": new RegExp(query,'i')})
-  .limit(50)
-  .select("personal_info.fullname personal_info.username personal_info.profile_img-_id")
-  .then(users=>{
-    return res.status(200).json({users})
-  })
-  .catch(err=>{
-    console.log(err.message);
-    return res.status(500).json({ error: err.message });
-  })
-})
+app.post("/search-user", (req, res) => {
+  let { query } = req.body;
+  User.find({ "personal_info.username": new RegExp(query, "i") })
+    .limit(50)
+    .select(
+      "personal_info.fullname personal_info.username personal_info.profile_img-_id"
+    )
+    .then((users) => {
+      return res.status(200).json({ users });
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
-app.post("/get-profile",(req,res)=>{
-  let {username} = req.body
-  User.findOne({"personal_info.username":username})
-  .select("-personal_info.password -google_auth -updatedAt -blogs")
-  .then(user=>{
-    return res.status(200).json(user)
-  })
-  .catch(err=>{
-    console.log(err);
-    return res.status(500).json({error:err.message})
-  })
-})
+app.post("/get-profile", (req, res) => {
+  let { username } = req.body;
+  User.findOne({ "personal_info.username": username })
+    .select("-personal_info.password -google_auth -updatedAt -blogs")
+    .then((user) => {
+      return res.status(200).json(user);
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 app.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
@@ -419,6 +422,26 @@ app.post("/create-blog", verifyJWT, (req, res) => {
             .status(500)
             .json({ error: "Failed to update total post number" });
         });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/get-blog", (req, res) => {
+  let { blog_id } = req.body;
+  let incrementVal = 1;
+  Blog.findOneAndUpdate(
+    { blog_id },
+    { $inc: { "activity.total_reads": incrementVal } }
+  )
+    .populate(
+      "author",
+      "personal_info.fullname personal_info.username personal_info.profile_img"
+    )
+    .select("title des content banner activity publishedAt blog_id tags")
+    .then((blog) => {
+      return res.status(200).json({ blog });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
