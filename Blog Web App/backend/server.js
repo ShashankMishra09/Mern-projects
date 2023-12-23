@@ -267,7 +267,7 @@ app.get("/trending-blogs", (req, res) => {
 });
 
 app.post("/search-blogs", (req, res) => {
-  let { tag, query, page, author } = req.body;
+  let { tag, query, page, author,limit } = req.body;
   let findQuery;
   if (tag) {
     findQuery = { tags: tag, draft: false };
@@ -281,7 +281,7 @@ app.post("/search-blogs", (req, res) => {
       .json({ error: "Tag or query parameter is required." });
   }
 
-  let maxLimit = 5;
+  let maxLimit = limit ?  limit : 2;
   Blog.find(findQuery)
     .populate(
       "author",
@@ -441,6 +441,13 @@ app.post("/get-blog", (req, res) => {
     )
     .select("title des content banner activity publishedAt blog_id tags")
     .then((blog) => {
+      User.findOneAndUpdate(
+        { "personal_info.username": blog.author.personal_info.username },
+        { $inc: { "account_info.total_reads": incrementVal } }
+      )
+      .catch(err=>{
+        return res.status(500).json({ error: err.message });
+      })
       return res.status(200).json({ blog });
     })
     .catch((err) => {

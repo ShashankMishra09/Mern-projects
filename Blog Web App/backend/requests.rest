@@ -1,6 +1,13 @@
-POST  http://localhost:8000/get-blog
+# POST  http://localhost:8000/get-blog
+# Content-Type: application/json
+
+# {
+#     "blog_id":"One-PieceHR5sS39XBLu5-EGqwoaL_"
+# }
+
+POST  http://localhost:8000/get-profile
 Content-Type: application/json
 
 {
-    "username":"god"
+    "username":"test3"
 }
