@@ -2,10 +2,13 @@ import { useContext } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Link } from "react-router-dom";
 import { UserContext } from "../App";
+import { Toaster, toast } from "react-hot-toast";
+
 
 const BlogInteraction = () => {
   
   let {
+    blog,
     title,
     blog: {
       blog_id,
@@ -16,15 +19,26 @@ const BlogInteraction = () => {
       },
     },
     setBlog,
+    isLiked,setIsLiked
   } = useContext(BlogContext);
-  let { userAuth: {username} } = useContext(UserContext)
+  let { userAuth: {username,access_token} } = useContext(UserContext)
+  const handleLike = () =>{
+    if(access_token){
+      setIsLiked(preVal=> !preVal)
+      !isLiked ? total_likes++ : total_likes--;
+      setBlog({...blog,activity:{...activity,total_likes}})
+    }else{
+      toast.error("please login to like the blog")
+    }
+  }
   return (
     <>
+    <Toaster />
       <hr className="border-grey my-2" />
       <div className="flex gap-6 justify-between">
         <div className="flex gap-3 items-center">
-          <button className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80">
-            <i className="fi fi-rr-heart"></i>
+          <button onClick={handleLike} className={"w-10 h-10 rounded-full flex items-center justify-center " + (isLiked ? "text-[#dc143c]" : "bg-grey/80")}>
+            <i className={"fi "+(isLiked ? "fi-sr-heart" : "fi-rr-heart")}></i>
           </button>
           <p className="text-xl text-dark-grey">{total_likes}</p>
           <button className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80">
