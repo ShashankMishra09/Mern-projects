@@ -1,13 +1,45 @@
 import { useContext } from "react";
 import { BlogContext } from "../pages/blog.page";
 import CommentField from "./comment-field.component";
+import axios from "axios";
+import NoDataMessage from "./nodata.component";
+
+export const fetchComment = async ({
+  skip = 0,
+  blog_id,
+  setParentCommentCount,
+  comment_array = null,
+}) => {
+  let res;
+  await axios
+    .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog-comments", {
+      blog_id,
+      skip,
+    })
+    .then(({ data }) => {
+      data.map((comment) => {
+        comment.childrenLevel = 0;
+      });
+      setParentCommentCount((preVal) => preVal + data.length);
+      if (comment_array == null) {
+        res = { result: data };
+      } else {
+        res = { result: [...comment_array, ...data] };
+      }
+    });
+  return res;
+};
 
 const CommentsContainer = () => {
   let {
     blog: { title },
+    comments: { results: commentsArr },
     commentsWrapper,
     setCommentsWrapper,
   } = useContext(BlogContext);
+
+  console.log(commentsArr);
+
   return (
     <div
       className={
@@ -32,6 +64,13 @@ const CommentsContainer = () => {
       </div>
       <hr className="border-grey my-8 w-[120%] -ml-10" />
       <CommentField action="Comment" />
+      {commentsArr && commentsArr.results && commentsArr.results.length ? (
+        commentsArr.results.map((comment, i) => {
+          return comment.comment;
+        })
+      ) : (
+        <NoDataMessage message="No comments yet" />
+      )}
     </div>
   );
 };

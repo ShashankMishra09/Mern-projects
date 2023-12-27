@@ -22,11 +22,12 @@ const commentSchema = mongoose.Schema({
     },
     commented_by: {
         type: Schema.Types.ObjectId,
-        require: true,
+        required: true,
         ref: 'users'
     },
     isReply: {
         type: Boolean,
+        default: false,
     },
     parent: {
         type: Schema.Types.ObjectId,

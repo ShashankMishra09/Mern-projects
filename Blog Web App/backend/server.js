@@ -478,53 +478,55 @@ app.post("/get-blog", (req, res) => {
     });
 });
 
-app.post("/like-blog",verifyJWT,(req,res)=>{
+app.post("/like-blog", verifyJWT, (req, res) => {
   let user_id = req.user;
-  let { _id, isLiked } = req.body
+  let { _id, isLiked } = req.body;
   let incrementVal = !isLiked ? 1 : -1;
-  Blog.findOneAndUpdate({ _id },{$inc:{"activity.total_likes": incrementVal}})
-  .then(blog=>{
-    if(!isLiked){
+  Blog.findOneAndUpdate(
+    { _id },
+    { $inc: { "activity.total_likes": incrementVal } }
+  ).then((blog) => {
+    if (!isLiked) {
       let like = new Notification({
         type: "like",
         blog: _id,
         notification_for: blog.author,
-        user: user_id
-      })
-      like.save().then(notification=>{
-        return res.status(200).json({ liked_by_user:true });
-      })
-    }else{
-      Notification.findOneAndDelete({user: user_id, blog: _id, type: "like"})
-      .then(data=>{
-        return res.status(200).json({liked_by_user:false})
-      })
-      .catch(err=>{
-        return res.status(500).json({error: err.message})
-      })
+        user: user_id,
+      });
+      like.save().then((notification) => {
+        return res.status(200).json({ liked_by_user: true });
+      });
+    } else {
+      Notification.findOneAndDelete({ user: user_id, blog: _id, type: "like" })
+        .then((data) => {
+          return res.status(200).json({ liked_by_user: false });
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
     }
-  })
-})
+  });
+});
 
-app.post("/isliked-by-user",verifyJWT,(req,res)=>{
+app.post("/isliked-by-user", verifyJWT, (req, res) => {
   let user_id = req.user;
-  let { _id } = req.body
+  let { _id } = req.body;
 
-  Notification.exists({user:user_id,type:"like",blog:_id})
-  .then(result=>{
-    return res.status(200).json({result})
-  })
-  .catch(err=>{
-    return res.status(500).json({error: err.message})
-  })
-})
+  Notification.exists({ user: user_id, type: "like", blog: _id })
+    .then((result) => {
+      return res.status(200).json({ result });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
 
-app.post("/make-comment",verifyJWT,(req,res)=>{
-  let user_id = req.user
-  let{ _id,comment,replyingto,blog_author } = req.body
+app.post("/make-comment", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { _id, comment, blog_author } = req.body;
 
-  if(!comment.length){
-    return res.status(403).json({error:"Write something to make a comment"})
+  if (!comment.length) {
+    return res.status(403).json({ error: "Write something to make a comment" });
   }
 
   let commentObj = new Comment({
@@ -532,28 +534,58 @@ app.post("/make-comment",verifyJWT,(req,res)=>{
     blog_author,
     comment,
     commented_by: user_id,
-    isReply,
-  })
+  });
 
-  commentObj.save()
-  .then(commentFile=>{
-    let { comment,commentedAt,children } = commentFile
-    Blog.findOneAndUpdate({_id},{ $push:{"comments":commentFile._id},$inc:{"activity.total_comments":1},"activity.total_parent_comments": 1 })
-    .then(blog=>{
+  commentObj.save().then((commentFile) => {
+    let { comment, commentedAt, children } = commentFile;
+    Blog.findOneAndUpdate(
+      { _id },
+      {
+        $push: { comments: commentFile._id },
+        $inc: { "activity.total_comments": 1 },
+        "activity.total_parent_comments": 1,
+      }
+    ).then((blog) => {
       console.log("new comment added");
-    })
+    });
     let notificationObj = {
       type: "comment",
       blog: _id,
       notification_for: blog_author,
       user: user_id,
-      comment:commentFile._id
-    }
-    new Notification(notificationObj).save().then(notification=>console.log("new notification"))
-    return res.status(200).json({comment,commentedAt,_id: commentFile._id, user_id, children})
-  })
+      comment: commentFile._id,
+    };
+    new Notification(notificationObj)
+      .save()
+      .then((notification) => console.log("new notification"));
+    return res
+      .status(200)
+      .json({ comment, commentedAt, _id: commentFile._id, user_id, children });
+  });
+});
 
-})
+app.post("/get-blog-comments", (req, res) => {
+  let { blog_id, skip } = req.body;
+  let maxLimit = 5;
+
+  Comment.find({ blog_id, isReply: false })
+    .populate(
+      "commented_by",
+      "personal_info.username personal_info.fullname personal_info.profile_img"
+    )
+    .skip(skip)
+    .limit(maxLimit)
+    .sort({
+      commentedAt: -1,
+    })
+    .then((comment) => {
+      return res.status(200).json(comment);
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 app.listen(PORT, () => {
   console.log(`We are running on ${PORT}`);
