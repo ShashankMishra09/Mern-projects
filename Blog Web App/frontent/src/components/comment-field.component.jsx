@@ -6,18 +6,18 @@ import { BlogContext } from "../pages/blog.page";
 
 const CommentField = ({ action }) => {
   let {
-    blog,
     blog: {
       _id,
       author: { _id: blog_author },
       comments,
+      comments: { results: commentsArr },
       activity,
       activity: { total_comments, total_parent_comments },
     },
     setBlog,
     setParentComments,
   } = useContext(BlogContext);
-  
+
   let {
     userAuth: { access_token, username, fullname, profile_img },
   } = useContext(UserContext);
@@ -45,6 +45,7 @@ const CommentField = ({ action }) => {
         }
       )
       .then(({ data }) => {
+        // console.log(data);
         setComment("");
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
@@ -52,7 +53,7 @@ const CommentField = ({ action }) => {
         let newCommentArr;
 
         data.childrenLevel = 0;
-        newCommentArr = [data];
+        newCommentArr = [...commentsArr, data];
         let parentCommentIncVal = 1;
         setBlog({
           ...blog,
@@ -63,7 +64,7 @@ const CommentField = ({ action }) => {
             total_parent_comments: total_parent_comments + parentCommentIncVal,
           },
         });
-        setParentComments(preVal => preVal + parentCommentIncVal)
+        setParentComments((preVal) => preVal + parentCommentIncVal);
       })
       .catch((err) => {
         console.log(err);

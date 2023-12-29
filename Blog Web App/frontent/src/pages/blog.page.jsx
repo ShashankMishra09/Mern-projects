@@ -51,9 +51,10 @@ const BlogPage = () => {
           blog_id: blog._id,
           setParentCommentCount: setParentComments,
         });
+        
+        // console.log(setParentComments());
 
         setBlog(blog);
-
         axios
           .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
             tag: blog.tags[0],
@@ -62,7 +63,6 @@ const BlogPage = () => {
           })
           .then(({ data }) => {
             setSimilarBlog(data.blogs);
-            console.log(data.blogs);
           });
         setLoading(false);
       })
@@ -108,7 +108,7 @@ const BlogPage = () => {
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />
             <div className="mt-12">
-              <h2>{title}</h2>
+              <h2>{title.length ? title : "Title"}</h2>
               <div className="flex max-sm:flex-col justify-between my-8">
                 <div className="flex gap-5 items-start">
                   <img src={profile_img} className="h-12 w-12 rounded-full" />

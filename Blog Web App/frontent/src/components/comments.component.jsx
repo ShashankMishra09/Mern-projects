@@ -3,6 +3,8 @@ import { BlogContext } from "../pages/blog.page";
 import CommentField from "./comment-field.component";
 import axios from "axios";
 import NoDataMessage from "./nodata.component";
+import AnimationWrapper from "../common/page-animation";
+import CommentCard from "./comment-card.component";
 
 export const fetchComment = async ({
   skip = 0,
@@ -11,6 +13,7 @@ export const fetchComment = async ({
   comment_array = null,
 }) => {
   let res;
+
   await axios
     .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog-comments", {
       blog_id,
@@ -22,9 +25,9 @@ export const fetchComment = async ({
       });
       setParentCommentCount((preVal) => preVal + data.length);
       if (comment_array == null) {
-        res = { result: data };
+        res = { results: data };
       } else {
-        res = { result: [...comment_array, ...data] };
+        res = { results: [...comment_array, ...data] };
       }
     });
   return res;
@@ -32,14 +35,20 @@ export const fetchComment = async ({
 
 const CommentsContainer = () => {
   let {
-    blog: { title },
-    comments: { results: commentsArr },
+    blog,
+    blog: {
+      title,
+      comments: { results: commentsArr },
+      activity: { total_parent_comments },
+    },
+
     commentsWrapper,
     setCommentsWrapper,
+    parentComments,
   } = useContext(BlogContext);
 
-  console.log(commentsArr);
-
+  
+ 
   return (
     <div
       className={
@@ -64,12 +73,30 @@ const CommentsContainer = () => {
       </div>
       <hr className="border-grey my-8 w-[120%] -ml-10" />
       <CommentField action="Comment" />
-      {commentsArr && commentsArr.results && commentsArr.results.length ? (
-        commentsArr.results.map((comment, i) => {
-          return comment.comment;
+      {commentsArr && commentsArr.length ? (
+        commentsArr.map((comment, i) => {
+          return (
+            <AnimationWrapper key={i}>
+              <CommentCard
+                key={i}
+                leftVal={comment.childrenLevel * 4}
+                commentData={comment}
+              />
+            </AnimationWrapper>
+          );
         })
       ) : (
         <NoDataMessage message="No comments yet" />
+      )}
+      {total_parent_comments > parentComments ? (
+        <button
+          onClick={loadMore}
+          className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-mmmmd flex items-center gap-2"
+        >
+          Load More
+        </button>
+      ) : (
+        ""
       )}
     </div>
   );
