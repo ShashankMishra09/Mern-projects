@@ -37,6 +37,7 @@ const CommentsContainer = () => {
   let {
     blog,
     blog: {
+      _id,
       title,
       comments: { results: commentsArr },
       activity: { total_parent_comments },
@@ -45,10 +46,20 @@ const CommentsContainer = () => {
     commentsWrapper,
     setCommentsWrapper,
     parentComments,
+    setParentComments,
+    setBlog,
   } = useContext(BlogContext);
 
-  
- 
+  const loadMore = async () => {
+    let newCommentsArr = await fetchComment({
+      skip: parentComments,
+      blog_id: _id,
+      setParentCommentCount: setParentComments,
+      comment_array: commentsArr,
+    });
+    setBlog({ ...blog, comments: newCommentsArr });
+  };
+
   return (
     <div
       className={
@@ -96,7 +107,7 @@ const CommentsContainer = () => {
           Load More
         </button>
       ) : (
-        ""
+        " "
       )}
     </div>
   );

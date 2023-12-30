@@ -52,7 +52,6 @@ const BlogPage = () => {
           setParentCommentCount: setParentComments,
         });
         
-        // console.log(setParentComments());
 
         setBlog(blog);
         axios
