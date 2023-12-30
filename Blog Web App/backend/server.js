@@ -534,6 +534,7 @@ app.post("/make-comment", verifyJWT, (req, res) => {
     blog_author,
     comment,
     commented_by: user_id,
+    isReply: replying_to ? true : false
   };
 
   if (replying_to) {
