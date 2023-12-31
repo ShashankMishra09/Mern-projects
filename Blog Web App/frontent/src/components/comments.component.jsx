@@ -23,9 +23,7 @@ export const fetchComment = async ({
       data.map((comment) => {
         comment.childrenLevel = 0;
       });
-      
       setParentCommentCount((preVal) => preVal + data.length);
-
       if (comment_array == null) {
         res = { results: data };
       } else {
