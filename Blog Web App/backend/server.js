@@ -534,7 +534,7 @@ app.post("/make-comment", verifyJWT, (req, res) => {
     blog_author,
     comment,
     commented_by: user_id,
-    isReply: replying_to ? true : false
+    // isReply: replying_to ? true : false
   };
 
   if (replying_to) {
@@ -542,29 +542,33 @@ app.post("/make-comment", verifyJWT, (req, res) => {
   }
 
   new Comment(commentObj).save().then(async (commentFile) => {
+
     let { comment, commentedAt, children } = commentFile;
-    Blog.findOneAndUpdate(
+    
+   await Blog.findOneAndUpdate(
       { _id },
       {
-        $push: { comments: commentFile._id },
+        $push: { "comments": commentFile._id },
         $inc: {
           "activity.total_comments": 1,
           "activity.total_parent_comments": replying_to ? 0 : 1,
         },
       }
     ).then((blog) => {
-      console.log("new comment added");
+      console.log("new comment added",blog);
     });
     let notificationObj = {
       type: replying_to ? "reply" : "comment",
       blog: _id,
       notification_for: blog_author,
       user: user_id,
-      comment: _id,
+      comment: commentFile._id,
     };
 
     if (replying_to) {
+
       notificationObj.replied_on_comment = replying_to;
+      
       await Comment.findOneAndUpdate(
         { _id: replying_to },
         { $push: { children: commentFile._id } }
@@ -596,6 +600,7 @@ app.post("/get-blog-comments", (req, res) => {
       commentedAt: -1,
     })
     .then((comment) => {
+      console.log(comment)
       return res.status(200).json(comment);
     })
     .catch((err) => {

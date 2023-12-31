@@ -29,8 +29,8 @@ const BlogPage = () => {
   const [similarBlog, setSimilarBlog] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [commentsWrapper, setCommentsWrapper] = useState(false);
-  const [parentComments, setParentComments] = useState(0);
+  const [commentsWrapper, setCommentsWrapper] = useState(true);
+  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
 
   let {
     title,
@@ -49,11 +49,12 @@ const BlogPage = () => {
 
         blog.comments = await fetchComment({
           blog_id: blog._id,
-          setParentCommentCount: setParentComments,
+          setParentCommentCount: setTotalParentCommentsLoaded,
         });
         
 
         setBlog(blog);
+        
         axios
           .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
             tag: blog.tags[0],
@@ -81,7 +82,7 @@ const BlogPage = () => {
     setLoading(true);
     setIsLiked(false);
     setCommentsWrapper(false);
-    setParentComments(0);
+    setTotalParentCommentsLoaded(0);
   };
 
   return (
@@ -97,12 +98,11 @@ const BlogPage = () => {
             setIsLiked,
             commentsWrapper,
             setCommentsWrapper,
-            parentComments,
-            setParentComments,
-            comments: blog.comments
+            totalParentCommentsLoaded,
+            setTotalParentCommentsLoaded,
           }}
         >
-          <CommentsContainer />
+          <CommentsContainer /> 
 
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />

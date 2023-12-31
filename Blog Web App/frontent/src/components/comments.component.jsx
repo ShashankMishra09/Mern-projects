@@ -23,7 +23,9 @@ export const fetchComment = async ({
       data.map((comment) => {
         comment.childrenLevel = 0;
       });
+      
       setParentCommentCount((preVal) => preVal + data.length);
+
       if (comment_array == null) {
         res = { results: data };
       } else {
@@ -45,16 +47,16 @@ const CommentsContainer = () => {
 
     commentsWrapper,
     setCommentsWrapper,
-    parentComments,
-    setParentComments,
+    totalParentCommentsLoaded,
+    setTotalParentCommentsLoaded,
     setBlog,
   } = useContext(BlogContext);
 
   const loadMore = async () => {
     let newCommentsArr = await fetchComment({
-      skip: parentComments,
+      skip: totalParentCommentsLoaded,
       blog_id: _id,
-      setParentCommentCount: setParentComments,
+      setParentCommentCount: setTotalParentCommentsLoaded,
       comment_array: commentsArr,
     });
     setBlog({ ...blog, comments: newCommentsArr });
@@ -99,7 +101,7 @@ const CommentsContainer = () => {
       ) : (
         <NoDataMessage message="No comments yet" />
       )}
-      {total_parent_comments > parentComments ? (
+      {total_parent_comments > totalParentCommentsLoaded ? (
         <button
           onClick={loadMore}
           className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-mmmmd flex items-center gap-2"

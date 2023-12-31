@@ -10,6 +10,13 @@ const CommentField = ({
   replyingTo = undefined,
   setIsReplying,
 }) => {
+
+  let {
+    userAuth: { access_token, username, fullname, profile_img },
+  } = useContext(UserContext);
+
+  const [comment, setComment] = useState("");
+
   let {
     blog,
     blog: {
@@ -21,20 +28,17 @@ const CommentField = ({
       activity: { total_comments, total_parent_comments },
     },
     setBlog,
-    setParentComments,
+    setTotalParentCommentsLoaded,
   } = useContext(BlogContext);
 
-  let {
-    userAuth: { access_token, username, fullname, profile_img },
-  } = useContext(UserContext);
-  const [comment, setComment] = useState("");
+  
 
   const handleComment = () => {
     if (!access_token) {
-      return toast.error("login first to leave a comment ");
+      return toast.error("login first to leave a comment 🚧 ");
     }
     if (!comment.length) {
-      return toast.error("Write something to make a comment 📓 ");
+      return toast.error("Write something to make a comment ✍  ");
     }
     axios
       .post(
@@ -52,14 +56,15 @@ const CommentField = ({
         }
       )
       .then(({ data }) => {
-        console.log(data);
+        // console.log(data);
         setComment("");
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
         };
+
         let newCommentArr;
 
-        if (!replyingTo) {
+        if (replyingTo) {
 
           commentsArr[index].children.push(data._id);
 
@@ -81,14 +86,14 @@ const CommentField = ({
 
         setBlog({
           ...blog,
-          comments: { ...comments, result: newCommentArr },
+          comments: { ...comments, results: newCommentArr },
           activity: {
             ...activity,
             total_comments: total_comments + 1,
             total_parent_comments: total_parent_comments + parentCommentIncVal,
           },
         });
-        setParentComments((preVal) => preVal + parentCommentIncVal);
+        setTotalParentCommentsLoaded((preVal) => preVal + parentCommentIncVal);
       })
       .catch((err) => {
         console.log(err);
