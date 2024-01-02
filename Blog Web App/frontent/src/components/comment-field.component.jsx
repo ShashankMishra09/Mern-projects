@@ -56,7 +56,6 @@ const CommentField = ({
         }
       )
       .then(({ data }) => {
-        // console.log(data);
         setComment("");
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
@@ -74,6 +73,8 @@ const CommentField = ({
           commentsArr[index].isReplyLoaded = true;
           commentsArr.splice(index + 1, 0, data);
           newCommentArr = commentsArr
+
+          setIsReplying(false)
 
         } else {
 

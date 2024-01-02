@@ -102,7 +102,7 @@ const CommentsContainer = () => {
       {total_parent_comments > totalParentCommentsLoaded ? (
         <button
           onClick={loadMore}
-          className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-mmmmd flex items-center gap-2"
+          className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2"
         >
           Load More
         </button>
