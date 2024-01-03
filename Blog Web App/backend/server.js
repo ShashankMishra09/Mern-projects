@@ -613,7 +613,7 @@ app.post("/get-replies", (req, res) => {
   Comment.findOne({ _id })
     .populate({
       path: "children",
-      option: {
+      options: {
         limit: maxLimit,
         skip: skip,
         sort: { commentedAt: -1 },
