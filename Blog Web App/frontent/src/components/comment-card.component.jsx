@@ -7,6 +7,7 @@ import { BlogContext } from "../pages/blog.page";
 import axios from "axios";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
+
   let {
     commented_by: {
       personal_info: { profile_img, fullname, username: commented_user },
@@ -14,7 +15,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     commentedAt,
     comment,
     _id,
-    children,
+    children
   } = commentData;
 
   let {
@@ -36,7 +37,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     userAuth: { access_token, username },
   } = useContext(UserContext);
 
-  const [isReplying, setIsReplying] = useState(false);
+  const [isReplying, setReplying] = useState(false);
 
   const getParentIndex = () => {
     let startingPoint = index - 1;
@@ -58,7 +59,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     if (!access_token) {
       return toast.error("login to reply");
     }
-    setIsReplying((preVal) => !preVal);
+    setReplying((preVal) => !preVal);
   };
 
   const removeCommentsCard = (startingPoint, isDelete = false) => {
@@ -109,8 +110,8 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     removeCommentsCard(index + 1);
   };
 
-  const loadReplies = ({ skip = 0 }) => {
-    if (children.length) {
+  const loadReplies = ({ skip = 0,currentIndex = index }) => {
+    if (commentsArr[currentIndex].children.length) {
       hideReplies();
       axios
         .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-replies", {
@@ -122,7 +123,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           for (let i = 0; i < replies.length; i++) {
             replies[i].childrenLevel = commentData.childrenLevel + 1;
 
-            commentsArr.splice(index + 1 + i + skip, 0, replies[i]);
+            commentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
           }
           setBlog({ ...blog, comments: { ...comments, results: commentsArr } });
         })
@@ -153,6 +154,17 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       .catch((err) => console.log(err));
   };
 
+  // const LoadMoreReplies = () => {
+  //   let parentIndex = getParentIndex();
+  //   if (commentsArr[index + 1]) {
+  //     if (
+  //       commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
+  //     ) {
+  //       return <button onClick={()=> loadReplies({skip:index-parentIndex, currentIndex : parentIndex})} className="text-dark-grey p-2 px-3 hover:bggrey/30 rounded-md flex items-center gap-2">Load More</button>;
+  //     }
+  //   }
+  // };
+
   return (
     <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
       <div className="my-5 p-6 rounded-md border border-grey">
@@ -164,7 +176,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           <p>{getDay(commentedAt)}</p>
         </div>
         <p className="font-xl font-gelasio ml-3">{comment}</p>
-        <div className="flex gap-5 items-center mt-5">
+        {/* <div className="flex gap-5 items-center mt-5">
           {commentData.isReplyLoaded ? (
             <button
               onClick={hideReplies}
@@ -183,7 +195,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           )}
           <button className="underline" onClick={handleReply}>
             Reply
-          </button>
+          </button>*/}
           {username == commented_user || username == blog_author ? (
             <button
               onClick={deleteComment}
@@ -194,20 +206,21 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           ) : (
             ""
           )}
-        </div>
+       {/* </div>
         {isReplying ? (
           <div className="mt-8">
             <CommentField
               action="reply"
               index={index}
               replyingTo={_id}
-              setIsReplying={setIsReplying}
+              setReplying={setReplying}
             />
           </div>
         ) : (
           ""
-        )}
-      </div>
+        )}*/}
+      </div> 
+      {/* <LoadMoreReplies /> */}
     </div>
   );
 };

@@ -8,7 +8,7 @@ const CommentField = ({
   action,
   index = undefined,
   replyingTo = undefined,
-  setIsReplying,
+  setReplying,
 }) => {
 
   let {
@@ -25,7 +25,7 @@ const CommentField = ({
       comments,
       comments: { results: commentsArr },
       activity,
-      activity: { total_comments, total_parent_comments },
+      activity: { total_comments, total_parent_comments }
     },
     setBlog,
     setTotalParentCommentsLoaded,
@@ -56,7 +56,9 @@ const CommentField = ({
         }
       )
       .then(({ data }) => {
+
         setComment("");
+        
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
         };
@@ -74,7 +76,7 @@ const CommentField = ({
           commentsArr.splice(index + 1, 0, data);
           newCommentArr = commentsArr
 
-          setIsReplying(false)
+          setReplying(false)
 
         } else {
 
