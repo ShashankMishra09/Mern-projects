@@ -1,13 +1,12 @@
 import { useContext, useState } from "react";
 import { getDay } from "../common/date";
 import { UserContext } from "../App";
-import toast, { Toaster } from "react-hot-toast";
-import CommentField from "./comment-field.component";
+// import toast, { Toaster } from "react-hot-toast";
+// import CommentField from "./comment-field.component";
 import { BlogContext } from "../pages/blog.page";
 import axios from "axios";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
-
   let {
     commented_by: {
       personal_info: { profile_img, fullname, username: commented_user },
@@ -15,7 +14,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     commentedAt,
     comment,
     _id,
-    children
+    // children
   } = commentData;
 
   let {
@@ -37,7 +36,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     userAuth: { access_token, username },
   } = useContext(UserContext);
 
-  const [isReplying, setReplying] = useState(false);
+  // const [isReplying, setReplying] = useState(false);
 
   const getParentIndex = () => {
     let startingPoint = index - 1;
@@ -55,12 +54,12 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     return startingPoint;
   };
 
-  const handleReply = () => {
-    if (!access_token) {
-      return toast.error("login to reply");
-    }
-    setReplying((preVal) => !preVal);
-  };
+  // const handleReply = () => {
+  //   if (!access_token) {
+  //     return toast.error("login to reply");
+  //   }
+  //   setReplying((preVal) => !preVal);
+  // };
 
   const removeCommentsCard = (startingPoint, isDelete = false) => {
     if (commentsArr[startingPoint]) {
@@ -104,34 +103,34 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     });
   };
 
-  const hideReplies = () => {
-    commentData.isReplyLoaded = false;
+  // const hideReplies = () => {
+  //   commentData.isReplyLoaded = false;
 
-    removeCommentsCard(index + 1);
-  };
+  //   removeCommentsCard(index + 1);
+  // };
 
-  const loadReplies = ({ skip = 0,currentIndex = index }) => {
-    if (commentsArr[currentIndex].children.length) {
-      hideReplies();
-      axios
-        .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-replies", {
-          _id,
-          skip,
-        })
-        .then(({ data: { replies } }) => {
-          commentData.isReplyLoaded = true;
-          for (let i = 0; i < replies.length; i++) {
-            replies[i].childrenLevel = commentData.childrenLevel + 1;
+  // const loadReplies = ({ skip = 0,currentIndex = index }) => {
+  //   if (commentsArr[currentIndex].children.length) {
+  //     hideReplies();
+  //     axios
+  //       .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-replies", {
+  //         _id: commentsArr[currentIndex]._id,
+  //         skip,
+  //       })
+  //       .then(({ data: { replies } }) => {
+  //         commentData.isReplyLoaded = true;
+  //         for (let i = 0; i < replies.length; i++) {
+  //           replies[i].childrenLevel = commentData.childrenLevel + 1;
 
-            commentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
-          }
-          setBlog({ ...blog, comments: { ...comments, results: commentsArr } });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  };
+  //           commentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
+  //         }
+  //         setBlog({ ...blog, comments: { ...comments, results: commentsArr, ...replies } });
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //       });
+  //   }
+  // };
 
   const deleteComment = (e) => {
     e.target.setAttribute("disabled", true);
@@ -160,7 +159,27 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   //     if (
   //       commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
   //     ) {
-  //       return <button onClick={()=> loadReplies({skip:index-parentIndex, currentIndex : parentIndex})} className="text-dark-grey p-2 px-3 hover:bggrey/30 rounded-md flex items-center gap-2">Load More</button>;
+  //       if (index - parentIndex < commentsArr[parentIndex].children.length) {
+  //         return (
+  //           <button
+  //             onClick={() =>
+  //               loadReplies({
+  //                 skip: index - parentIndex,
+  //                 currentIndex: parentIndex,
+  //               })
+  //             }
+  //             className="text-dark-grey p-2 px-3 hover:bggrey/30 rounded-md flex items-center gap-2"
+  //           >
+  //             Load More
+  //           </button>
+  //         );
+  //       }
+  //     }else{
+  //       if(parentIndex){
+  //         if((index-parentIndex)<commentsArr[parentIndex].children.length){
+  //           return button
+  //         }
+  //       }
   //     }
   //   }
   // };
@@ -196,17 +215,17 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           <button className="underline" onClick={handleReply}>
             Reply
           </button>*/}
-          {username == commented_user || username == blog_author ? (
-            <button
-              onClick={deleteComment}
-              className="p-2 px-3 rounded-md border border-grey ml-auto hover:bg-red/30 hover:text-red flex items-center"
-            >
-              <i className="fi fi-rr-trash text-xl pointer-events-none"></i>
-            </button>
-          ) : (
-            ""
-          )}
-       {/* </div>
+        {username == commented_user || username == blog_author ? (
+          <button
+            onClick={deleteComment}
+            className="p-2 px-3 rounded-md border border-grey ml-auto hover:bg-red/30 hover:text-red flex items-center"
+          >
+            <i className="fi fi-rr-trash text-xl pointer-events-none"></i>
+          </button>
+        ) : (
+          ""
+        )}
+        {/* </div>
         {isReplying ? (
           <div className="mt-8">
             <CommentField
@@ -219,7 +238,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         ) : (
           ""
         )}*/}
-      </div> 
+      </div>
       {/* <LoadMoreReplies /> */}
     </div>
   );
