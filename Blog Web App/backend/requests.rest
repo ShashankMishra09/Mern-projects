@@ -5,7 +5,7 @@
 #     "blog_id":"One-PieceHR5sS39XBLu5-EGqwoaL_"
 # }
 
-POST  http://localhost:8000/get-profile
+POST  http://localhost:8000/change-password
 Content-Type: application/json
 
 {
