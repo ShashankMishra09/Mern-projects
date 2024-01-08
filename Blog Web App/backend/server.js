@@ -250,35 +250,52 @@ app.post("/change-password", verifyJWT, (req, res) => {
       .json({ error: "Write a valid password like --> eX12@#" });
   }
 
-  User.findOne({_id: req.user})
-  .then(user=>{
-    if(user.google_auth){
-      return res.status(403).json({error:"You logged in using google so you can't change password."})
-    }
-    bcrypt.compare(currentPassword,user.personal_info.password,(err,result)=>{
-      if(err){
-        return res.status(500).json({error:"Some error occured while changing password"})
+  User.findOne({ _id: req.user })
+    .then((user) => {
+      if (user.google_auth) {
+        return res
+          .status(403)
+          .json({
+            error: "You logged in using google so you can't change password.",
+          });
       }
+      bcrypt.compare(
+        currentPassword,
+        user.personal_info.password,
+        (err, result) => {
+          if (err) {
+            return res
+              .status(500)
+              .json({ error: "Some error occured while changing password" });
+          }
 
-      if(!result){
-        return res.status(403).json({error:"Incorrect current password"})
-      }
+          if (!result) {
+            return res
+              .status(403)
+              .json({ error: "Incorrect current password" });
+          }
 
-      bcrypt.hash(newPassword,10,(err,hashed_password)=>{
-        User.findOneAndUpdate({_id: req.user},{"personal_info.password":hashed_password})
-        .then((u)=>{
-          return res.status(200).json({status:'password changed'})
-        })
-        .catch(err=>{
-          return res.status(500).json({error:"Some error occured while saving"})
-        })
-      })
+          bcrypt.hash(newPassword, 10, (err, hashed_password) => {
+            User.findOneAndUpdate(
+              { _id: req.user },
+              { "personal_info.password": hashed_password }
+            )
+              .then((u) => {
+                return res.status(200).json({ status: "password changed" });
+              })
+              .catch((err) => {
+                return res
+                  .status(500)
+                  .json({ error: "Some error occured while saving" });
+              });
+          });
+        }
+      );
     })
-  })
-  .catch(err=>{
-    console.log(err);
-    return res.status(500).json({error:"user not found"})
-  })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({ error: "user not found" });
+    });
 });
 
 app.post("/all-latest-blogs-count", (req, res) => {
@@ -399,6 +416,63 @@ app.post("/get-profile", (req, res) => {
       console.log(err);
       return res.status(500).json({ error: err.message });
     });
+});
+
+app.post("/update-profile-img", verifyJWT, (req, res) => {
+  let { url } = req.body;
+  User.findOneAndUpdate({ _id: req.user }, { "personal_info.profile_img": url })
+    .then(() => {
+      return res.status(200).json({ profile_img: url });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/update-profile", verifyJWT, (req, res) => {
+  let { username, bio, social_links } = req.body;
+  let bioLimit = 150;
+  if (username.length < 3) {
+    return res
+      .status(403)
+      .json({ error: "Username should be more than 3 letters" });
+  }
+  if (bio.length > bioLimit) {
+    return res
+      .status(403)
+      .json({ error: "bio should be less than 150 characters" });
+  }
+  let socialLinksArr = Object.keys(social_links);
+  try {
+    for (let i = 0; i < socialLinksArr.length; i++) {
+      if (social_links[socialLinksArr[i]].length) {
+        let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
+        if(!hostname.includes(`${socialLinksArr[i]}.com`) && socialLinksArr[i] != 'website'){
+          return res.status(403).json({error:`${socialLinksArr[i]} link is invalid.`})
+        }
+      }
+    }
+  } catch {
+    return res
+      .status(500)
+      .json({ error: "You should provide social links properly" });
+  }
+  let UpdateObj = {
+    "personal_info.username":username,
+    "personal_info.bio":bio,
+    social_links
+  }
+  User.findOneAndUpdate({_id:req.user},UpdateObj,{
+    runValidators:true  
+  })
+  .then(()=>{
+    return res.status(200).json({username})
+  })
+  .catch(err=>{
+   if(err.code == 11000){
+    return res.status(500).json({error:err.message})
+   }
+  })
 });
 
 app.post("/create-blog", verifyJWT, (req, res) => {

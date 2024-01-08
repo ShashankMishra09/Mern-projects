@@ -15,7 +15,8 @@ const AboutUser = ({ className, bio, social_links, joinedAt }) => {
               <i
                 className={
                   "fi " +
-                  (key != "website" ? "fi-brands-" + key : "fi-rr-globe")+ " text-2xl hover:text-black"
+                  (key != "website" ? "fi-brands-" + key : "fi-rr-globe") +
+                  " text-2xl hover:text-black"
                 }
               ></i>
             </Link>
@@ -24,7 +25,7 @@ const AboutUser = ({ className, bio, social_links, joinedAt }) => {
           );
         })}
       </div>
-      <p className="text-xl leading-7 text-dark-grey">{(getFullDay(joinedAt))}</p>
+      <p className="text-xl leading-7 text-dark-grey">{getFullDay(joinedAt)}</p>
     </div>
   );
 };
