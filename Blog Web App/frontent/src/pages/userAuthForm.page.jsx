@@ -4,7 +4,8 @@ import googleIcon from "../imgs/google.png";
 import { Link, Navigate } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import axios from "axios";
-import { Toaster, toast } from "react-hot-toast"; // to make ui alert Toaster is html component and toast knows where to show alert
+import { Toaster, toast } from "react-hot-toast";
+ // to make ui alert Toaster is html component and toast knows where to show alert
 import { storeInSession } from "../common/session";
 import { UserContext } from "../App";
 import { authGoogle } from "../common/firebase";
