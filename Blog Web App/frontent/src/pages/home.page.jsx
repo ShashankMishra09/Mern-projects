@@ -128,10 +128,9 @@ const HomePage = () => {
               <LoadMoreDataBtn
                 state={blogs}
                 fetchData={
-                 ( pageState == "home" ? fetchLatestBlogs : fetchBlogsByCategory)
+                  pageState == "home" ? fetchLatestBlogs : fetchBlogsByCategory
                 }
               />
-              
             </>
             <>
               {trendingBlogs == null ? (
