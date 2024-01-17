@@ -7,13 +7,20 @@ export const filterPaginationData = async ({
   page,
   countRoute,
   data_to_send={},
+  user
 }) => {
   let obj;
+  let headers = {}
+  if(user){
+    headers.headers = {
+      'Authorization': `Bearer ${access_token}`
+    }
+  }
   if (state != null && !create_new_arr) {
     obj = { ...state, result: [...state.result, ...data], page: page };
   } else {
     await axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_send)
+      .post(import.meta.env.VITE_SERVER_DOMAIN + countRoute, data_to_send,headers)
       .then(({ data: { totalDocs } }) => {
         obj = { result: data, page: 1, totalDocs };
       })
