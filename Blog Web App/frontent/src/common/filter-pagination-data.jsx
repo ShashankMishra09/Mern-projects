@@ -7,13 +7,13 @@ export const filterPaginationData = async ({
   page,
   countRoute,
   data_to_send={},
-  user
+  user = undefined,
 }) => {
   let obj;
   let headers = {}
   if(user){
     headers.headers = {
-      'Authorization': `Bearer ${access_token}`
+      'Authorization': `Bearer ${user}`
     }
   }
   if (state != null && !create_new_arr) {

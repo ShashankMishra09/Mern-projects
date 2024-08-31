@@ -53,8 +53,6 @@ const Navbar = () => {
           <img src={logo} className="w-full" />
         </Link>
 
-        {new_notification_available}
-
         <div
           className={
             "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] border-0 block sm:relative md:relative sm:inset-0 md:inset-0 sm:p-0 md:p-0 sm:w-auto md:w-auto " +

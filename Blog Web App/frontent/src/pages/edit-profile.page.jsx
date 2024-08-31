@@ -215,7 +215,6 @@ const EditProfile = () => {
                     type="email"
                     value={email}
                     placeholder="Email"
-                    disable={true}
                     icon="fi-rr-envelope"
                   />
                 </div>
@@ -226,6 +225,7 @@ const EditProfile = () => {
                 name="username"
                 value={profile_username}
                 placeholder="User Name"
+                disable={true}
                 icon="fi-rr-at"
               />
 

@@ -1,5 +1,5 @@
 const LoadMoreDataBtn = ({ state, fetchData,additionalParam }) => {
-  if (state != null && state.totalDocs > state.result.length) {
+  if (state != null && state.totalDocs > state.result?.length) {
     return (
       <button
         onClick={() => fetchData({...additionalParam,page: state.page+1})}

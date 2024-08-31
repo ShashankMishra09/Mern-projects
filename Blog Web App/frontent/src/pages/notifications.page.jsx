@@ -77,7 +77,7 @@ const Notifications = () => {
         <Loader />
       ) : (
         <>
-          {notifications.results.length ? (
+          {(notifications.results?.length) ? (
             notifications.results.map((notification, i) => {
               return (
                 <AnimationWrapper key={i} transition={{ delay: 1 * 0.08 }}>
