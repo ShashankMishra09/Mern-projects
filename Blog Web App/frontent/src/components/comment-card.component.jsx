@@ -153,36 +153,36 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       .catch((err) => console.log(err));
   };
 
-  // const LoadMoreReplies = () => {
-  //   let parentIndex = getParentIndex();
-  //   if (commentsArr[index + 1]) {
-  //     if (
-  //       commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
-  //     ) {
-  //       if (index - parentIndex < commentsArr[parentIndex].children.length) {
-  //         return (
-  //           <button
-  //             onClick={() =>
-  //               loadReplies({
-  //                 skip: index - parentIndex,
-  //                 currentIndex: parentIndex,
-  //               })
-  //             }
-  //             className="text-dark-grey p-2 px-3 hover:bggrey/30 rounded-md flex items-center gap-2"
-  //           >
-  //             Load More
-  //           </button>
-  //         );
-  //       }
-  //     }else{
-  //       if(parentIndex){
-  //         if((index-parentIndex)<commentsArr[parentIndex].children.length){
-  //           return button
-  //         }
-  //       }
-  //     }
-  //   }
-  // };
+  const LoadMoreReplies = () => {
+    let parentIndex = getParentIndex();
+    if (commentsArr[index + 1]) {
+      if (
+        commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
+      ) {
+        if (index - parentIndex < commentsArr[parentIndex].children.length) {
+          return (
+            <button
+              onClick={() =>
+                loadReplies({
+                  skip: index - parentIndex,
+                  currentIndex: parentIndex,
+                })
+              }
+              className="text-dark-grey p-2 px-3 hover:bggrey/30 rounded-md flex items-center gap-2"
+            >
+              Load More
+            </button>
+          );
+        }
+      }else{
+        if(parentIndex){
+          if((index-parentIndex)<commentsArr[parentIndex].children.length){
+            return button
+          }
+        }
+      }
+    }
+  };
 
   return (
     <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
@@ -195,7 +195,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           <p>{getDay(commentedAt)}</p>
         </div>
         <p className="font-xl font-gelasio ml-3">{comment}</p>
-        {/* <div className="flex gap-5 items-center mt-5">
+        <div className="flex gap-5 items-center mt-5">
           {commentData.isReplyLoaded ? (
             <button
               onClick={hideReplies}
@@ -214,7 +214,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           )}
           <button className="underline" onClick={handleReply}>
             Reply
-          </button>*/}
+          </button>
         {username == commented_user || username == blog_author ? (
           <button
             onClick={deleteComment}
@@ -225,7 +225,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         ) : (
           ""
         )}
-        {/* </div>
+        </div>
         {isReplying ? (
           <div className="mt-8">
             <CommentField
@@ -237,9 +237,9 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           </div>
         ) : (
           ""
-        )}*/}
+        )}
       </div>
-      {/* <LoadMoreReplies /> */}
+      <LoadMoreReplies />
     </div>
   );
 };

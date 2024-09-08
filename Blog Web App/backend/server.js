@@ -20,7 +20,7 @@ import Notification from "./Schema/Notification.js";
 
 const app = express();
 app.use(cors());
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
 });
@@ -253,11 +253,9 @@ app.post("/change-password", verifyJWT, (req, res) => {
   User.findOne({ _id: req.user })
     .then((user) => {
       if (user.google_auth) {
-        return res
-          .status(403)
-          .json({
-            error: "You logged in using google so you can't change password.",
-          });
+        return res.status(403).json({
+          error: "You logged in using google so you can't change password.",
+        });
       }
       bcrypt.compare(
         currentPassword,
@@ -447,8 +445,13 @@ app.post("/update-profile", verifyJWT, (req, res) => {
     for (let i = 0; i < socialLinksArr.length; i++) {
       if (social_links[socialLinksArr[i]].length) {
         let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
-        if(!hostname.includes(`${socialLinksArr[i]}.com`) && socialLinksArr[i] != 'website'){
-          return res.status(403).json({error:`${socialLinksArr[i]} link is invalid.`})
+        if (
+          !hostname.includes(`${socialLinksArr[i]}.com`) &&
+          socialLinksArr[i] != "website"
+        ) {
+          return res
+            .status(403)
+            .json({ error: `${socialLinksArr[i]} link is invalid.` });
         }
       }
     }
@@ -458,21 +461,21 @@ app.post("/update-profile", verifyJWT, (req, res) => {
       .json({ error: "You should provide social links properly" });
   }
   let UpdateObj = {
-    "personal_info.username":username,
-    "personal_info.bio":bio,
-    social_links
-  }
-  User.findOneAndUpdate({_id:req.user},UpdateObj,{
-    runValidators:true  
+    "personal_info.username": username,
+    "personal_info.bio": bio,
+    social_links,
+  };
+  User.findOneAndUpdate({ _id: req.user }, UpdateObj, {
+    runValidators: true,
   })
-  .then(()=>{
-    return res.status(200).json({username})
-  })
-  .catch(err=>{
-   if(err.code == 11000){
-    return res.status(500).json({error:err.message})
-   }
-  })
+    .then(() => {
+      return res.status(200).json({ username });
+    })
+    .catch((err) => {
+      if (err.code == 11000) {
+        return res.status(500).json({ error: err.message });
+      }
+    });
 });
 
 app.post("/create-blog", verifyJWT, (req, res) => {
@@ -802,68 +805,76 @@ app.post("/delete-comment", verifyJWT, (req, res) => {
   });
 });
 
-app.get("/new-notification",verifyJWT,(req,res)=>{
-  let user_id =  req.user
-
-  Notification.exists({notification_for:user_id,seen:false,user:{$ne:user_id}})
-  .then(result=>{
-    if(result){
-      return res.status(200).json({new_notification_available: true})
-    }else{
-      return res.status(200).json({new_notification_available:false})
-    }
-  }).catch(err=>{
-    console.log(err.message);
-    return res.status(500).json({error:err.message})
-  })
-})
-
-app.post("/notifications",verifyJWT,(req,res)=>{
+app.get("/new-notification", verifyJWT, (req, res) => {
   let user_id = req.user;
-  let {page, filter, deletedDocCount} = req.body;
+
+  Notification.exists({
+    notification_for: user_id,
+    seen: false,
+    user: { $ne: user_id },
+  })
+    .then((result) => {
+      if (result) {
+        return res.status(200).json({ new_notification_available: true });
+      } else {
+        return res.status(200).json({ new_notification_available: false });
+      }
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/notifications", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { page, filter, deletedDocCount } = req.body;
   let maxLimit = 10;
-  let findQuery={notification_for: user_id, user:{$ne:user_id}  }
-  let skipDocs = (page - 1)*maxLimit
-  if(filter!= 'all'){
-    findQuery.type = filter
+  let findQuery = { notification_for: user_id, user: { $ne: user_id } };
+  let skipDocs = (page - 1) * maxLimit;
+  if (filter != "all") {
+    findQuery.type = filter;
   }
-  if(deletedDocCount){
-    skipDocs -= deletedDocCount
+  if (deletedDocCount) {
+    skipDocs -= deletedDocCount;
   }
   Notification.find(findQuery)
-  .skip(skipDocs)
-  .limit(maxLimit)
-  .populate("blog","title blog_id")
-  .populate("user","personal_info.fullname personal_info.username personal_info.profile_img")
-  .populate("comment","comment")
-  .populate("replied_on_comment","comment")
-  .populate("reply","comment")
-  .sort({createdAt:-1})
-  .select("createdAt type seen reply")
-  .then(notification=>{
-    return res.status(200).json({notification})
-  })
-  .catch(err=>{
-    console.log(err.message);
-    return res.status(500).json({error:err.message})
-  })
-})
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .populate("blog", "title blog_id")
+    .populate(
+      "user",
+      "personal_info.fullname personal_info.username personal_info.profile_img"
+    )
+    .populate("comment", "comment")
+    .populate("replied_on_comment", "comment")
+    .populate("reply", "comment")
+    .sort({ createdAt: -1 })
+    .select("createdAt type seen reply")
+    .then((notification) => {
+      return res.status(200).json({ notification });
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
-app.post("/all-notifications-count",verifyJWT,(req,res)=>{
-  let user_id = req.user
-  let {filter} = req.body
-  let findQuery = {notification_for:user_id,user:{$ne:user_id}}
-  if(filter!='all'){
-    findQuery.type = filter
+app.post("/all-notifications-count", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { filter } = req.body;
+  let findQuery = { notification_for: user_id, user: { $ne: user_id } };
+  if (filter != "all") {
+    findQuery.type = filter;
   }
   Notification.countDocuments(findQuery)
-  .then(count=>{
-    return res.status(200).json({totalDocs:count})
-  })
-  .catch(err=>{
-    return res.status(500).json({error:err.message})
-  })
-})
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 app.listen(PORT, () => {
   console.log(`We are running on ${PORT}`);
